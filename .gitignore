@@ -1,0 +1,11 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs/GptChatCoder/FileContentIndex
+/.vs/GptChatCoder/v17
+/bin/Debug
+/obj
+/.vs/slnx.sqlite
+/.vs/VSWorkspaceState.json
+/.vs/CodeAss/FileContentIndex

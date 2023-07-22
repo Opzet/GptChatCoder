@@ -1,0 +1,785 @@
+[FILE] CodeAss/App.config
+<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+    <startup>
+        <supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.8" />
+    </startup>
+</configuration>
+[ENDFILE]
+[FILE] Debug/CodeAss.exe.config
+<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+    <startup>
+        <supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.8" />
+    </startup>
+</configuration>
+[ENDFILE]
+[FILE] Debug/LibGit2Sharp.dll.config
+<configuration>
+    <dllmap os="linux" cpu="x86-64" wordsize="64" dll="git2-e632535" target="lib/linux-x64/libgit2-e632535.so" />
+    <dllmap os="linux" cpu="arm" wordsize="32" dll="git2-e632535" target="lib/linux-arm/libgit2-e632535.so" />
+    <dllmap os="linux" cpu="armv8" wordsize="64" dll="git2-e632535" target="lib/linux-arm64/libgit2-e632535.so" />
+    <dllmap os="osx" cpu="x86-64" wordsize="64" dll="git2-e632535" target="lib/osx-x64/libgit2-e632535.dylib" />
+    <dllmap os="osx" cpu="armv8" wordsize="64" dll="git2-e632535" target="lib/osx-arm64/libgit2-e632535.dylib" />
+</configuration>
+[ENDFILE]
+[FILE] CodeAss/CodeAss.csproj
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http:
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{344A9BD8-5774-4E88-8B4A-BB34F2FDE6DD}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>CodeAss</RootNamespace>
+    <AssemblyName>CodeAss</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Form1.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form1.Designer.cs">
+      <DependentUpon>Form1.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GithubInterface.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="Form1.resx">
+      <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="LibGit2Sharp">
+      <Version>0.27.2</Version>
+    </PackageReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
+[ENDFILE]
+[FILE] CodeAss/CodeAss.sln
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33829.357
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeAss", "CodeAss.csproj", "{344A9BD8-5774-4E88-8B4A-BB34F2FDE6DD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{344A9BD8-5774-4E88-8B4A-BB34F2FDE6DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{344A9BD8-5774-4E88-8B4A-BB34F2FDE6DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{344A9BD8-5774-4E88-8B4A-BB34F2FDE6DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{344A9BD8-5774-4E88-8B4A-BB34F2FDE6DD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {878C96BC-73FD-437A-ACF3-AFB2E0167E99}
+	EndGlobalSection
+EndGlobal
+[ENDFILE]
+[FILE] CodeAss/Form1.cs
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+namespace CodeAss
+{
+    public partial class Form1 : Form
+    {
+        private readonly IGitRepositoryManager gitRepoManager;
+        private readonly IGPTSeedingService gptSeedingService;
+        private Timer progressUpdateTimer;
+        public Form1(IGitRepositoryManager gitRepoManager, IGPTSeedingService gptSeedingService)
+        {
+            InitializeComponent();
+            this.gitRepoManager = gitRepoManager;
+            this.gptSeedingService = gptSeedingService;
+            progressUpdateTimer = new Timer();
+            progressUpdateTimer.Interval = 100;
+            progressUpdateTimer.Tick += ProgressUpdateTimer_Tick;
+        }
+        private async void btnCloneRepo_Click(object sender, EventArgs e)
+        {
+            string repoUrl = txtRepoUrl.Text;
+            string localPath = txtLocalPath.Text;
+            try
+            {
+                btnCloneRepo.Enabled = false;
+                feedbackLabel.Text = "Cloning repository...";
+                statusLabel.Text = "Cloning in progress...";
+                progressBar.Value = 0;
+                progressBar.Visible = true;
+                await gitRepoManager.CloneRepositoryAsync(repoUrl, localPath);
+                feedbackLabel.Text = "Repository cloned successfully!";
+                statusLabel.Text = "Clone operation completed.";
+            }
+            catch (Exception ex)
+            {
+                feedbackLabel.Text = "Error: " + ex.Message;
+                statusLabel.Text = "Clone operation failed.";
+            }
+            finally
+            {
+                btnCloneRepo.Enabled = true;
+                progressBar.Visible = false;
+            }
+        }
+        private void ProgressUpdateTimer_Tick(object sender, EventArgs e)
+        {
+            if (gitRepoManager.ProgressState != null)
+            {
+                progressBar.Maximum = (int)gitRepoManager.ProgressState.TotalObjects;
+                progressBar.Value = (int)gitRepoManager.ProgressState.ReceivedObjects;
+            }
+        }
+        private void btnSeedGPT_Click(object sender, EventArgs e)
+        {
+            string localPath = txtLocalPath.Text;
+            string outputPath = txtOutputPath.Text;
+            try
+            {
+                btnSeedGPT.Enabled = false;
+                feedbackLabel.Text = "Seeding GPT...";
+                statusLabel.Text = "GPT seeding in progress...";
+                if (File.Exists(outputPath))
+                {
+                    File.Delete(outputPath);
+                }
+                gptSeedingService.GenerateTextFromRepo(localPath, outputPath);
+                feedbackLabel.Text = "GPT seeding completed!";
+                statusLabel.Text = "GPT seeding operation completed.";
+            }
+            catch (Exception ex)
+            {
+                feedbackLabel.Text = "Error: " + ex.Message;
+                statusLabel.Text = "GPT seeding operation failed.";
+            }
+            finally
+            {
+                btnSeedGPT.Enabled = true;
+            }
+        }
+        private void btnSelectRepoPath_Click(object sender, EventArgs e)
+        {
+            using (var folderBrowserDialog = new FolderBrowserDialog())
+            {
+                DialogResult result = folderBrowserDialog.ShowDialog();
+                if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(folderBrowserDialog.SelectedPath))
+                {
+                    txtLocalPath.Text = folderBrowserDialog.SelectedPath;
+                }
+            }
+        }
+        private void btnSelectOutputPath_Click(object sender, EventArgs e)
+        {
+            using (var saveFileDialog = new SaveFileDialog())
+            {
+                saveFileDialog.Filter = "Text Files|*.txt";
+                saveFileDialog.Title = "Save GPT Output";
+                DialogResult result = saveFileDialog.ShowDialog();
+                if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(saveFileDialog.FileName))
+                {
+                    txtOutputPath.Text = saveFileDialog.FileName;
+                }
+            }
+        }
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            if (Debugger.IsAttached)
+            {
+                string solutionDir = GetSolutionDirectory();
+                txtLocalPath.Text = solutionDir;
+                string outputFile = Path.Combine(solutionDir, "OutputForGPT.txt");
+                txtOutputPath.Text = outputFile;
+            }
+        }
+        private string GetSolutionDirectory()
+        {
+            string currentAssemblyPath = Assembly.GetExecutingAssembly().Location;
+            string projectPath = Path.GetDirectoryName(currentAssemblyPath);
+            string solutionDir = projectPath;
+            while (!string.IsNullOrEmpty(solutionDir))
+            {
+                string[] solutionFiles = Directory.GetFiles(solutionDir, "*.sln");
+                if (solutionFiles.Length > 0)
+                {
+                    return solutionDir;
+                }
+                solutionDir = Path.GetDirectoryName(solutionDir);
+            }
+            return projectPath;
+        }
+    }
+}
+[ENDFILE]
+[FILE] CodeAss/Form1.Designer.cs
+namespace CodeAss
+{
+    partial class Form1
+    {
+        private System.ComponentModel.IContainer components = null;
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+        private System.Windows.Forms.ProgressBar progressBar;
+        private System.Windows.Forms.StatusStrip statusStrip1;
+        private System.Windows.Forms.ToolStripStatusLabel statusLabel;
+        private System.Windows.Forms.Label feedbackLabel;
+        private System.Windows.Forms.Button btnCloneRepo;
+        private System.Windows.Forms.Button btnSelectRepoPath;
+        private System.Windows.Forms.Button btnSelectOutputPath;
+        private System.Windows.Forms.Button btnSeedGPT;
+        private System.Windows.Forms.TextBox txtRepoUrl;
+        private System.Windows.Forms.TextBox txtLocalPath;
+        private System.Windows.Forms.TextBox txtOutputPath;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label label3;
+    }
+}
+[ENDFILE]
+[FILE] CodeAss/Form1.resx
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!--
+    Microsoft ResX Schema
+    Version 2.0
+    The primary goals of this format is to allow a simple XML format
+    that is mostly human readable. The generation and parsing of the
+    various data types are done through the TypeConverter classes
+    associated with the data types.
+    Example:
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+    There are any number of "resheader" rows that contain simple
+    name/value pairs.
+    Each data row contains a name, and value. The row also contains a
+    type or mimetype. Type corresponds to a .NET class that support
+    text/value conversion through the TypeConverter architecture.
+    Classes that don't support this are serialized and stored with the
+    mimetype set.
+    The mimetype is used for serialized objects, and tells the
+    ResXResourceReader how to depersist the object. This is currently not
+    extensible. For a given mimetype the value must be set accordingly:
+    Note - application/x-microsoft.net.object.binary.base64 is the format
+    that the ResXResourceWriter will generate, however the reader can
+    read any of the formats listed below.
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http:
+    <xsd:import namespace="http:
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <metadata name="statusStrip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>17, 17</value>
+  </metadata>
+</root>
+[ENDFILE]
+[FILE] CodeAss/GithubInterface.cs
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using System.Timers;
+using LibGit2Sharp;
+namespace CodeAss
+{
+    public interface IGitRepositoryManager
+    {
+        TransferProgress ProgressState { get; }
+        void CloneRepository(string repoUrl, string localPath);
+        Task CloneRepositoryAsync(string repoUrl, string localPath);
+    }
+    public interface IGPTSeedingService
+    {
+        Task GenerateTextFromRepo(string localPath, string outputPath);
+    }
+    public class TransferProgressEventArgs : EventArgs
+    {
+        public TransferProgress Progress { get; }
+        public TransferProgressEventArgs(TransferProgress progress)
+        {
+            Progress = progress;
+        }
+    }
+    public partial class CodeAss : IGitRepositoryManager, IGPTSeedingService
+    {
+        public TransferProgress progressState;
+        public TransferProgress ProgressState => progressState;
+        private Timer progressUpdateTimer;
+        public event EventHandler<TransferProgressEventArgs> TransferProgressChanged;
+        public void CloneRepository(string repoUrl, string localPath)
+        {
+            Repository.Clone(repoUrl, localPath);
+        }
+        public Task GenerateTextFromRepo(string localPath, string outputPath)
+        {
+            return Task.Run(() =>
+            {
+                using (var writer = new StreamWriter(outputPath))
+                {
+                    TraverseAndConvert(localPath, writer);
+                }
+            });
+        }
+        public void TraverseAndConvert(string path, StreamWriter writer)
+        {
+            foreach (var item in Directory.GetFileSystemEntries(path))
+            {
+                if (Directory.Exists(item))
+                {
+                    TraverseAndConvert(item, writer);
+                }
+                else
+                {
+                    string extension = Path.GetExtension(item).ToLower();
+                    if (!IsRequiredFileExtension(extension))
+                    {
+                        continue;
+                    }
+                    string relativePath = GetRelativePath(item, path);
+                    string content = string.Empty;
+                    using (var fs = new FileStream(item, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                    {
+                        using (var reader = new StreamReader(fs))
+                        {
+                            content = reader.ReadToEnd();
+                        }
+                    }
+                    content = ProcessContent(content);
+                    content = RemoveBlankLinesAndWhitespace(content);
+                    writer.WriteLine($"[FILE] {relativePath}");
+                    writer.WriteLine(content);
+                    writer.WriteLine("[ENDFILE]");
+                }
+            }
+        }
+        private bool IsRequiredFileExtension(string extension)
+        {
+            string[] requiredExtensions = {
+                                        ".cs", ".config", ".csproj", ".sln", ".resx", ".Designer.cs"
+                                    };
+            return requiredExtensions.Contains(extension);
+        }
+        private string GetRelativePath(string fullPath, string basePath)
+        {
+            Uri baseUri = new Uri(basePath);
+            Uri fullUri = new Uri(fullPath);
+            Uri relativeUri = baseUri.MakeRelativeUri(fullUri);
+            return Uri.UnescapeDataString(relativeUri.ToString());
+        }
+        private string ProcessContent(string content)
+        {
+            content = Regex.Replace(content, @"
+            content = Regex.Replace(content, @"/\*.*?\*/", "", RegexOptions.Singleline);
+            content = Regex.Replace(content, @"", "", RegexOptions.Singleline);
+            content = Regex.Replace(content, @"", "", RegexOptions.Singleline);
+            return content;
+        }
+        private string RemoveBlankLinesAndWhitespace(string content)
+        {
+            string[] lines = content.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+            List<string> nonEmptyLines = new List<string>();
+            bool previousLineWasEmpty = false;
+            foreach (string line in lines)
+            {
+                bool isCurrentLineEmpty = string.IsNullOrWhiteSpace(line.Trim());
+                if (isCurrentLineEmpty)
+                {
+                    continue;
+                }
+                if (!isCurrentLineEmpty)
+                {
+                    nonEmptyLines.Add(line.TrimEnd());
+                }
+                previousLineWasEmpty = isCurrentLineEmpty;
+            }
+            string result = string.Join(Environment.NewLine, nonEmptyLines);
+            return result;
+        }
+        public async Task CloneRepositoryAsync(string repoUrl, string localPath)
+        {
+            await Task.Run(() =>
+            {
+                Repository.Clone(repoUrl, localPath, new CloneOptions
+                {
+                    OnTransferProgress = (progress) =>
+                    {
+                        TransferProgressChanged?.Invoke(this, new TransferProgressEventArgs(progress));
+                        return true;
+                    },
+                    OnCheckoutProgress = OnCheckoutProgressCallback
+                });
+            });
+        }
+        private void OnCheckoutProgressCallback(string path, int completedSteps, int totalSteps)
+        {
+        }
+        private void ProgressUpdateTimer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+        }
+    }
+}
+[ENDFILE]
+[FILE] Debug/.NETFramework,Version=v4.8.AssemblyAttributes.cs
+using System;
+using System.Reflection;
+[assembly: global::System.Runtime.Versioning.TargetFrameworkAttribute(".NETFramework,Version=v4.8", FrameworkDisplayName = ".NET Framework 4.8")]
+[ENDFILE]
+[FILE] CodeAss/Program.cs
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+namespace CodeAss
+{
+    internal static class Program
+    {
+        [STAThread]
+        static void Main()
+        {
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            IGitRepositoryManager gitRepoManager = new CodeAss();
+            IGPTSeedingService gptSeedingService = new CodeAss();
+            Application.Run(new Form1(gitRepoManager, gptSeedingService));
+        }
+    }
+}
+[ENDFILE]
+[FILE] Properties/AssemblyInfo.cs
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+[assembly: AssemblyTitle("CodeAss")]
+[assembly: AssemblyDescription("")]
+[assembly: AssemblyConfiguration("")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("CodeAss")]
+[assembly: AssemblyCopyright("Copyright ©  2023")]
+[assembly: AssemblyTrademark("")]
+[assembly: AssemblyCulture("")]
+[assembly: ComVisible(false)]
+[assembly: Guid("344a9bd8-5774-4e88-8b4a-bb34f2fde6dd")]
+[assembly: AssemblyVersion("1.0.0.0")]
+[assembly: AssemblyFileVersion("1.0.0.0")]
+[ENDFILE]
+[FILE] Properties/Resources.Designer.cs
+namespace CodeAss.Properties
+{
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    internal class Resources
+    {
+        private static global::System.Resources.ResourceManager resourceMan;
+        private static global::System.Globalization.CultureInfo resourceCulture;
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        internal Resources()
+        {
+        }
+        [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
+        internal static global::System.Resources.ResourceManager ResourceManager
+        {
+            get
+            {
+                if ((resourceMan == null))
+                {
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("CodeAss.Properties.Resources", typeof(Resources).Assembly);
+                    resourceMan = temp;
+                }
+                return resourceMan;
+            }
+        }
+        [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
+        internal static global::System.Globalization.CultureInfo Culture
+        {
+            get
+            {
+                return resourceCulture;
+            }
+            set
+            {
+                resourceCulture = value;
+            }
+        }
+    }
+}
+[ENDFILE]
+[FILE] Properties/Resources.resx
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!--
+    Microsoft ResX Schema
+    Version 2.0
+    The primary goals of this format is to allow a simple XML format
+    that is mostly human readable. The generation and parsing of the
+    various data types are done through the TypeConverter classes
+    associated with the data types.
+    Example:
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+    There are any number of "resheader" rows that contain simple
+    name/value pairs.
+    Each data row contains a name, and value. The row also contains a
+    type or mimetype. Type corresponds to a .NET class that support
+    text/value conversion through the TypeConverter architecture.
+    Classes that don't support this are serialized and stored with the
+    mimetype set.
+    The mimetype is used for serialized objects, and tells the
+    ResXResourceReader how to depersist the object. This is currently not
+    extensible. For a given mimetype the value must be set accordingly:
+    Note - application/x-microsoft.net.object.binary.base64 is the format
+    that the ResXResourceWriter will generate, however the reader can
+    read any of the formats listed below.
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with
+            : System.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http:
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+</root>
+[ENDFILE]
+[FILE] Properties/Settings.Designer.cs
+namespace CodeAss.Properties
+{
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "11.0.0.0")]
+    internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase
+    {
+        private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
+        public static Settings Default
+        {
+            get
+            {
+                return defaultInstance;
+            }
+        }
+    }
+}
+[ENDFILE]
