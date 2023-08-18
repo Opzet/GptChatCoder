@@ -2,107 +2,147 @@
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+
+
 
 namespace CodeAss
 {
-    public partial class Form1 : Form
+    public partial class MainForm : Form
     {
-        private readonly IGitRepositoryManager gitRepoManager;
-        private readonly IGPTSeedingService gptSeedingService;
-        private Timer progressUpdateTimer;
+        private readonly IGitRepositoryManager _repositoryManager;
+        private readonly IGPTSeedingService _seedingService;
+        private Timer _progressTimer;
 
-        public Form1(IGitRepositoryManager gitRepoManager, IGPTSeedingService gptSeedingService)
+        public MainForm(IGitRepositoryManager repositoryManager, IGPTSeedingService seedingService)
         {
             InitializeComponent();
-            this.gitRepoManager = gitRepoManager;
-            this.gptSeedingService = gptSeedingService;
+            _repositoryManager = repositoryManager;
+            _seedingService = seedingService;
 
-            // Create and initialize the progressUpdateTimer
-            progressUpdateTimer = new Timer();
-            progressUpdateTimer.Interval = 100;
-            progressUpdateTimer.Tick += ProgressUpdateTimer_Tick;
+            InitializeProgressTimer();
         }
 
+        /// <summary>
+        /// Initializes the progress timer with required configurations.
+        /// </summary>
+        private void InitializeProgressTimer()
+        {
+            _progressTimer = new Timer
+            {
+                Interval = 100
+            };
+            _progressTimer.Tick += HandleProgressUpdate;
+        }
+
+        /// <summary>
+        /// Handles repository cloning upon button click.
+        /// </summary>
+        /// 
         private async void btnCloneRepo_Click(object sender, EventArgs e)
         {
-            string repoUrl = txtRepoUrl.Text;
-            string localPath = txtLocalPath.Text;
+            if (string.IsNullOrEmpty(txtRepoUrl.Text) || string.IsNullOrEmpty(txtLocalPath.Text))
+            {
+                feedbackLabel.Text = "Please provide the repository URL and local path.";
+                return;
+            }
+
+            ToggleButtonState(btnCloneRepo, false);
+            DisplayProgress("Cloning repository...");
 
             try
             {
-                btnCloneRepo.Enabled = false;
-                feedbackLabel.Text = "Cloning repository...";
-                statusLabel.Text = "Cloning in progress...";
-
-                progressBar.Value = 0;
-                progressBar.Visible = true;
-
-                await gitRepoManager.CloneRepositoryAsync(repoUrl, localPath);
-
+                await _repositoryManager.CloneRepositoryAsync(txtRepoUrl.Text, txtLocalPath.Text);
                 feedbackLabel.Text = "Repository cloned successfully!";
-                statusLabel.Text = "Clone operation completed.";
             }
             catch (Exception ex)
             {
-                feedbackLabel.Text = "Error: " + ex.Message;
-                statusLabel.Text = "Clone operation failed.";
+                feedbackLabel.Text = $"Error: {ex.Message}";
+                // TODO: Log the error for debugging.
             }
             finally
             {
-                btnCloneRepo.Enabled = true;
-                progressBar.Visible = false;
+                ResetProgress();
+                ToggleButtonState(btnCloneRepo, true);
             }
         }
 
-
-
-        private void ProgressUpdateTimer_Tick(object sender, EventArgs e)
+        /// <summary>
+        /// Updates the UI to reflect progress state.
+        /// </summary>
+        private void HandleProgressUpdate(object sender, EventArgs e)
         {
-            // Update UI with transfer progress
-            if (gitRepoManager.ProgressState != null)
+            var progressState = _repositoryManager.ProgressState;
+            if (progressState != null)
             {
-                progressBar.Maximum = (int)gitRepoManager.ProgressState.TotalObjects;
-                progressBar.Value = (int)gitRepoManager.ProgressState.ReceivedObjects;
+                progressBar.Maximum = (int)progressState.TotalObjects;
+                progressBar.Value = (int)progressState.ReceivedObjects;
             }
         }
 
+        /// <summary>
+        /// Handles GPT seeding upon button click.
+        /// </summary>
         private void btnSeedGPT_Click(object sender, EventArgs e)
         {
-            string localPath = txtLocalPath.Text;
-            string outputPath = txtOutputPath.Text;
+            if (string.IsNullOrEmpty(txtLocalPath.Text) || string.IsNullOrEmpty(txtOutputPath.Text))
+            {
+                feedbackLabel.Text = "Please provide the local path and output path.";
+                return;
+            }
+
+            ToggleButtonState(btnSeedGPT, false);
+            DisplayProgress("Seeding GPT...");
 
             try
             {
-                btnSeedGPT.Enabled = false;
-                feedbackLabel.Text = "Seeding GPT...";
-                statusLabel.Text = "GPT seeding in progress...";
-
-                // Delete the output file if it already exists
-                if (File.Exists(outputPath))
+                if (File.Exists(txtOutputPath.Text))
                 {
-                    File.Delete(outputPath);
+                    File.Delete(txtOutputPath.Text);
                 }
 
-                // Generate the text to the output file
-                gptSeedingService.GenerateTextFromRepo(localPath, outputPath);
-
+                _seedingService.GenerateTextFromRepo(txtLocalPath.Text, txtOutputPath.Text);
                 feedbackLabel.Text = "GPT seeding completed!";
-                statusLabel.Text = "GPT seeding operation completed.";
             }
             catch (Exception ex)
             {
-                feedbackLabel.Text = "Error: " + ex.Message;
-                statusLabel.Text = "GPT seeding operation failed.";
+                feedbackLabel.Text = $"Error: {ex.Message}";
+                // TODO: Log the error for debugging.
             }
             finally
             {
-                btnSeedGPT.Enabled = true;
+                ResetProgress();
+                ToggleButtonState(btnSeedGPT, true);
             }
         }
 
+        /// <summary>
+        /// Displays progress information.
+        /// </summary>
+        private void DisplayProgress(string message)
+        {
+            progressBar.Visible = true;
+            progressBar.Value = 0;
+            feedbackLabel.Text = message;
+            statusLabel.Text = $"{message} in progress...";
+        }
+
+        /// <summary>
+        /// Resets the progress display.
+        /// </summary>
+        private void ResetProgress()
+        {
+            progressBar.Visible = false;
+            statusLabel.Text = "Ready";
+        }
+
+        /// <summary>
+        /// Toggles the enabled state of a button.
+        /// </summary>
+        private void ToggleButtonState(Button button, bool isEnabled)
+        {
+            button.Enabled = isEnabled;
+        }
 
         private void btnSelectRepoPath_Click(object sender, EventArgs e)
         {

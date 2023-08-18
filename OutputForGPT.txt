@@ -1,4 +1,4 @@
-[FILE] CodeAss/App.config
+[FILE] GptChatCoder/App.config
 <?xml version="1.0" encoding="utf-8" ?>
 <configuration>
     <startup>
@@ -23,7 +23,7 @@
     <dllmap os="osx" cpu="armv8" wordsize="64" dll="git2-e632535" target="lib/osx-arm64/libgit2-e632535.dylib" />
 </configuration>
 [ENDFILE]
-[FILE] CodeAss/CodeAss.csproj
+[FILE] GptChatCoder/CodeAss.csproj
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http:
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -114,7 +114,7 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
 [ENDFILE]
-[FILE] CodeAss/CodeAss.sln
+[FILE] GptChatCoder/CodeAss.sln
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.6.33829.357
@@ -140,90 +140,110 @@ Global
 	EndGlobalSection
 EndGlobal
 [ENDFILE]
-[FILE] CodeAss/Form1.cs
+[FILE] GptChatCoder/Form1.cs
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 namespace CodeAss
 {
-    public partial class Form1 : Form
+    public partial class MainForm : Form
     {
-        private readonly IGitRepositoryManager gitRepoManager;
-        private readonly IGPTSeedingService gptSeedingService;
-        private Timer progressUpdateTimer;
-        public Form1(IGitRepositoryManager gitRepoManager, IGPTSeedingService gptSeedingService)
+        private readonly IGitRepositoryManager _repositoryManager;
+        private readonly IGPTSeedingService _seedingService;
+        private Timer _progressTimer;
+        public MainForm(IGitRepositoryManager repositoryManager, IGPTSeedingService seedingService)
         {
             InitializeComponent();
-            this.gitRepoManager = gitRepoManager;
-            this.gptSeedingService = gptSeedingService;
-            progressUpdateTimer = new Timer();
-            progressUpdateTimer.Interval = 100;
-            progressUpdateTimer.Tick += ProgressUpdateTimer_Tick;
+            _repositoryManager = repositoryManager;
+            _seedingService = seedingService;
+            InitializeProgressTimer();
+        }
+        private void InitializeProgressTimer()
+        {
+            _progressTimer = new Timer
+            {
+                Interval = 100
+            };
+            _progressTimer.Tick += HandleProgressUpdate;
         }
         private async void btnCloneRepo_Click(object sender, EventArgs e)
         {
-            string repoUrl = txtRepoUrl.Text;
-            string localPath = txtLocalPath.Text;
+            if (string.IsNullOrEmpty(txtRepoUrl.Text) || string.IsNullOrEmpty(txtLocalPath.Text))
+            {
+                feedbackLabel.Text = "Please provide the repository URL and local path.";
+                return;
+            }
+            ToggleButtonState(btnCloneRepo, false);
+            DisplayProgress("Cloning repository...");
             try
             {
-                btnCloneRepo.Enabled = false;
-                feedbackLabel.Text = "Cloning repository...";
-                statusLabel.Text = "Cloning in progress...";
-                progressBar.Value = 0;
-                progressBar.Visible = true;
-                await gitRepoManager.CloneRepositoryAsync(repoUrl, localPath);
+                await _repositoryManager.CloneRepositoryAsync(txtRepoUrl.Text, txtLocalPath.Text);
                 feedbackLabel.Text = "Repository cloned successfully!";
-                statusLabel.Text = "Clone operation completed.";
             }
             catch (Exception ex)
             {
-                feedbackLabel.Text = "Error: " + ex.Message;
-                statusLabel.Text = "Clone operation failed.";
+                feedbackLabel.Text = $"Error: {ex.Message}";
             }
             finally
             {
-                btnCloneRepo.Enabled = true;
-                progressBar.Visible = false;
+                ResetProgress();
+                ToggleButtonState(btnCloneRepo, true);
             }
         }
-        private void ProgressUpdateTimer_Tick(object sender, EventArgs e)
+        private void HandleProgressUpdate(object sender, EventArgs e)
         {
-            if (gitRepoManager.ProgressState != null)
+            var progressState = _repositoryManager.ProgressState;
+            if (progressState != null)
             {
-                progressBar.Maximum = (int)gitRepoManager.ProgressState.TotalObjects;
-                progressBar.Value = (int)gitRepoManager.ProgressState.ReceivedObjects;
+                progressBar.Maximum = (int)progressState.TotalObjects;
+                progressBar.Value = (int)progressState.ReceivedObjects;
             }
         }
         private void btnSeedGPT_Click(object sender, EventArgs e)
         {
-            string localPath = txtLocalPath.Text;
-            string outputPath = txtOutputPath.Text;
+            if (string.IsNullOrEmpty(txtLocalPath.Text) || string.IsNullOrEmpty(txtOutputPath.Text))
+            {
+                feedbackLabel.Text = "Please provide the local path and output path.";
+                return;
+            }
+            ToggleButtonState(btnSeedGPT, false);
+            DisplayProgress("Seeding GPT...");
             try
             {
-                btnSeedGPT.Enabled = false;
-                feedbackLabel.Text = "Seeding GPT...";
-                statusLabel.Text = "GPT seeding in progress...";
-                if (File.Exists(outputPath))
+                if (File.Exists(txtOutputPath.Text))
                 {
-                    File.Delete(outputPath);
+                    File.Delete(txtOutputPath.Text);
                 }
-                gptSeedingService.GenerateTextFromRepo(localPath, outputPath);
+                _seedingService.GenerateTextFromRepo(txtLocalPath.Text, txtOutputPath.Text);
                 feedbackLabel.Text = "GPT seeding completed!";
-                statusLabel.Text = "GPT seeding operation completed.";
             }
             catch (Exception ex)
             {
-                feedbackLabel.Text = "Error: " + ex.Message;
-                statusLabel.Text = "GPT seeding operation failed.";
+                feedbackLabel.Text = $"Error: {ex.Message}";
             }
             finally
             {
-                btnSeedGPT.Enabled = true;
+                ResetProgress();
+                ToggleButtonState(btnSeedGPT, true);
             }
+        }
+        private void DisplayProgress(string message)
+        {
+            progressBar.Visible = true;
+            progressBar.Value = 0;
+            feedbackLabel.Text = message;
+            statusLabel.Text = $"{message} in progress...";
+        }
+        private void ResetProgress()
+        {
+            progressBar.Visible = false;
+            statusLabel.Text = "Ready";
+        }
+        private void ToggleButtonState(Button button, bool isEnabled)
+        {
+            button.Enabled = isEnabled;
         }
         private void btnSelectRepoPath_Click(object sender, EventArgs e)
         {
@@ -278,10 +298,10 @@ namespace CodeAss
     }
 }
 [ENDFILE]
-[FILE] CodeAss/Form1.Designer.cs
+[FILE] GptChatCoder/Form1.Designer.cs
 namespace CodeAss
 {
-    partial class Form1
+    partial class MainForm
     {
         private System.ComponentModel.IContainer components = null;
         protected override void Dispose(bool disposing)
@@ -309,7 +329,7 @@ namespace CodeAss
     }
 }
 [ENDFILE]
-[FILE] CodeAss/Form1.resx
+[FILE] GptChatCoder/Form1.resx
 <?xml version="1.0" encoding="utf-8"?>
 <root>
   <!--
@@ -423,14 +443,13 @@ namespace CodeAss
   </metadata>
 </root>
 [ENDFILE]
-[FILE] CodeAss/GithubInterface.cs
+[FILE] GptChatCoder/GithubInterface.cs
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Timers;
 using LibGit2Sharp;
 namespace CodeAss
 {
@@ -454,13 +473,30 @@ namespace CodeAss
     }
     public partial class CodeAss : IGitRepositoryManager, IGPTSeedingService
     {
-        public TransferProgress progressState;
+        private TransferProgress progressState;
         public TransferProgress ProgressState => progressState;
-        private Timer progressUpdateTimer;
         public event EventHandler<TransferProgressEventArgs> TransferProgressChanged;
         public void CloneRepository(string repoUrl, string localPath)
         {
             Repository.Clone(repoUrl, localPath);
+        }
+        public async Task CloneRepositoryAsync(string repoUrl, string localPath)
+        {
+            await Task.Run(() =>
+            {
+                Repository.Clone(repoUrl, localPath, new CloneOptions
+                {
+                    OnTransferProgress = (progress) =>
+                    {
+                        TransferProgressChanged?.Invoke(this, new TransferProgressEventArgs(progress));
+                        return true;
+                    },
+                    OnCheckoutProgress = OnCheckoutProgressCallback
+                });
+            });
+        }
+        private void OnCheckoutProgressCallback(string path, int completedSteps, int totalSteps)
+        {
         }
         public Task GenerateTextFromRepo(string localPath, string outputPath)
         {
@@ -472,7 +508,7 @@ namespace CodeAss
                 }
             });
         }
-        public void TraverseAndConvert(string path, StreamWriter writer)
+        private void TraverseAndConvert(string path, StreamWriter writer)
         {
             foreach (var item in Directory.GetFileSystemEntries(path))
             {
@@ -544,29 +580,7 @@ namespace CodeAss
                 }
                 previousLineWasEmpty = isCurrentLineEmpty;
             }
-            string result = string.Join(Environment.NewLine, nonEmptyLines);
-            return result;
-        }
-        public async Task CloneRepositoryAsync(string repoUrl, string localPath)
-        {
-            await Task.Run(() =>
-            {
-                Repository.Clone(repoUrl, localPath, new CloneOptions
-                {
-                    OnTransferProgress = (progress) =>
-                    {
-                        TransferProgressChanged?.Invoke(this, new TransferProgressEventArgs(progress));
-                        return true;
-                    },
-                    OnCheckoutProgress = OnCheckoutProgressCallback
-                });
-            });
-        }
-        private void OnCheckoutProgressCallback(string path, int completedSteps, int totalSteps)
-        {
-        }
-        private void ProgressUpdateTimer_Elapsed(object sender, ElapsedEventArgs e)
-        {
+            return string.Join(Environment.NewLine, nonEmptyLines);
         }
     }
 }
@@ -576,7 +590,7 @@ using System;
 using System.Reflection;
 [assembly: global::System.Runtime.Versioning.TargetFrameworkAttribute(".NETFramework,Version=v4.8", FrameworkDisplayName = ".NET Framework 4.8")]
 [ENDFILE]
-[FILE] CodeAss/Program.cs
+[FILE] GptChatCoder/Program.cs
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -593,7 +607,7 @@ namespace CodeAss
             Application.SetCompatibleTextRenderingDefault(false);
             IGitRepositoryManager gitRepoManager = new CodeAss();
             IGPTSeedingService gptSeedingService = new CodeAss();
-            Application.Run(new Form1(gitRepoManager, gptSeedingService));
+            Application.Run(new MainForm(gitRepoManager, gptSeedingService));
         }
     }
 }

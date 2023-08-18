@@ -21,7 +21,7 @@ namespace CodeAss
             IGitRepositoryManager gitRepoManager = new CodeAss();
             IGPTSeedingService gptSeedingService = new CodeAss();
 
-            Application.Run(new Form1(gitRepoManager, gptSeedingService));
+            Application.Run(new MainForm(gitRepoManager, gptSeedingService));
         }
     }
 }
