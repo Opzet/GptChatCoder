@@ -15,19 +15,36 @@ namespace CodeAss
         private int totalChunks;
         private string chunksDirectory;
 
-        const string GPTInstruct = "[INSTRUCTION: STRICTLY WAIT FOR ALL PARTS TO BE UPLOADED BEFORE GENERATING ANY OUTPUT!]\r\n" +
-                                   "[DESCRIPTION] This is a collection of C# code files from a Visual Studio project. Once the entire project has been uploaded, I will request tasks related to the code. This could include revising the code, fixing errors, restructuring or refactoring the codebase, and/or adding documentation. Please treat the contents as a coherent set and maintain the context when working on the provided tasks.\r\n";
-                                   
+       
+
         public ClipboardLoader()
         {
             InitializeComponent();
         }
 
+
+        void DeleteTempContents()
+        {
+            string tempDirectoryBase = Path.Combine(Path.GetTempPath(), "CodeAssChunks");
+
+            try
+            {
+                if (Directory.Exists(tempDirectoryBase))
+                {
+                    Directory.Delete(tempDirectoryBase, true);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Handle exception if necessary
+                Console.WriteLine("Error deleting temporary directory: " + ex.Message);
+            }
+        }
         private void btnChunkProject_Click(object sender, EventArgs e)
         {
             // Load the initial instruction
-            txtPreview.Text = GPTInstruct;
-            
+            txtPreview.Text = "";
+
             ValidateButtons();
 
             if (string.IsNullOrEmpty(repoPath.Text))
@@ -41,48 +58,30 @@ namespace CodeAss
 
             chunksDirectory = GetUniqueTempDirectory();
 
-            // Set the output file path with .txt extension in the source directory
-            //string outputFile = Path.Combine(solutionDir, "OutputForGPT.txt");
-            //txtOutputPath.Text = outputFile;
-
-            // Chunk Repo
-            RepoToGpt.TraverseAndSaveChunks(repoPath.Text, chunksDirectory);
-
-            totalChunks = Directory.GetFiles(chunksDirectory, "chunk_*.txt").Length;
-
-           
-            // Initialize the progress bar after determining the total chunks
-            progressBar1.Minimum = 1;
-            progressBar1.Maximum = totalChunks;
-            progressBar1.Value = 1;
-            progressBar1.Step = 1;
+            totalChunks = RepoToGpt.TraverseAndSaveChunks(repoPath.Text, GetUniqueTempDirectory(), RepoToGpt.MAX_TEXT_LENGTH);
 
             feedbackLabel.Text = $"Chunking completed. {totalChunks} chunks created.";
             LoadContent(currentChunkNumber);
-            ValidateButtons(); 
+            ValidateButtons();
         }
-
 
 
         private string GetUniqueTempDirectory()
         {
             string tempDirectoryBase = Path.GetTempPath();
-            string uniqueDirectory;
+            tempDirectoryBase = Path.Combine(tempDirectoryBase, "CodeAssChunks");
 
-            do
-            {
-                uniqueDirectory = Path.Combine(tempDirectoryBase, Path.GetRandomFileName());
-            } while (Directory.Exists(uniqueDirectory));
+            Directory.CreateDirectory(tempDirectoryBase);
 
-            Directory.CreateDirectory(uniqueDirectory);
-
-            return uniqueDirectory;
+            return tempDirectoryBase;
         }
+
 
 
         private void ClipboardLoader_Load(object sender, EventArgs e)
         {
-            
+            DeleteTempContents();
+
             statusLabel.Text = $"Ready> Select Solution Path";
             
             // Get the directory of the solution file (.sln)
@@ -117,29 +116,6 @@ namespace CodeAss
             return projectPath;
         }
 
-
-
-        private void btnLoadNextChunk_Click(object sender, EventArgs e)
-        {
-
-            
-            if (currentChunkNumber <= totalChunks)
-            {
-                string chunkPath = Path.Combine(chunksDirectory, $"chunk_{currentChunkNumber}.txt");
-                txtPreview.Text = File.ReadAllText(chunkPath);
-                Clipboard.SetText(txtPreview.Text);
-                progressBar1.Value = currentChunkNumber;
-
-                statusLabel.Text = $"Loaded chunk {currentChunkNumber} of {totalChunks}";
-                currentChunkNumber++;
-            }
-            else
-            {
-                statusLabel.Text = "All chunks loaded!";
-                btnChunkProject.Enabled = false;
-            }
-
-        }
 
         private void btnSelectRepoPath_Click(object sender, EventArgs e)
         {
@@ -207,39 +183,25 @@ namespace CodeAss
 
         private void LoadContent(int contentNumber)
         {
-            string contentToLoad;
-
-            string GPTChunkMsg = "[INSTRUCTION: STRICTLY DO NOT GENERATE OUTPUT UNTIL PROMPTED!]\r\n" +
-                                $"[PART : {contentNumber} OF {totalChunks}]";
-
+            string contentToLoad = "";
 
             if (contentNumber == 0) // Load initial instructions
             {
-              
-
-                contentToLoad = GPTInstruct;
-                contentToLoad += GPTChunkMsg;
-                contentToLoad += $"[START UPLOAD]"; 
+                contentToLoad = "[CHUNK]\r\n" +
+                                "Chunk Number: 0\r\n" +
+                                $"Total Chunks: {totalChunks}\r\n" +
+                                "Instructions:\r\n" +
+                                "1. Upload all chunks of the codebase before generating any output.\r\n" +
+                                "2. This is a collection of C# code files from a Visual Studio project.\r\n" +
+                                "3. Once the entire project has been uploaded, I will request tasks related to the code.\r\n" +
+                                "4. This could include revising the code, fixing errors, restructuring or refactoring the codebase, and/or adding documentation.\r\n" +
+                                "5. Please treat the contents as a coherent set and maintain the context when working on the provided tasks.\r\n" +
+                                "[/CHUNK]";
             }
-            else if (contentNumber >= 1 && contentNumber <= totalChunks)
+            else if (contentNumber >= 1 && contentNumber < totalChunks)
             {
                 string chunkPath = Path.Combine(chunksDirectory, $"chunk_{contentNumber}.txt");
-                
-                contentToLoad = File.ReadAllText(chunkPath);
-                contentToLoad += GPTChunkMsg;
-
-                progressBar1.Value = contentNumber;
-                statusLabel.Text = $"Loaded chunk {contentNumber} of {totalChunks}";
-
-                if (contentNumber == totalChunks)
-                {
-                    contentToLoad += GPTChunkMsg;
-                    contentToLoad += "\n[END UPLOAD]\n[INSTRUCTION] All parts uploaded. You can now process and generate an output.";
-                }
-            }
-            else
-            {
-                contentToLoad = "";
+                contentToLoad = RepoToGpt.ReadandWrapChunks(chunkPath);
             }
 
             txtPreview.Text = contentToLoad;
@@ -253,7 +215,6 @@ namespace CodeAss
                 Clipboard.Clear();
             }
         }
-
 
         private void ValidateButtons()
         {

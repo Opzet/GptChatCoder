@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -14,7 +15,8 @@ namespace CodeAss
 {
     public static class RepoToGpt
     {
-        private const int MAX_FILE_SIZE = 2048;  // Set to ChatGPT's limit or desired value.
+        //The purpose of both values is to ensure that the content being processed fits within the token limit(4096 tokens) enforced by GPT-3.
+        public const int MAX_TEXT_LENGTH = 2048;  // Set to ChatGPT's API limit or desired value.
         private static int currentFileNumber = 1;
         private static string buffer = "";
 
@@ -50,80 +52,87 @@ namespace CodeAss
             return lastFunctionEnd;
         }
 
-        public static void TraverseAndSaveChunks(string path, string outputDirectory)
-        {
-            TraverseAndProcess(path, content =>
-            {
-                buffer += content;
+        static int totalChunks = 0; // Initialize totalChunksAcrossFiles counter
 
-                while (buffer.Length >= MAX_FILE_SIZE)
-                {
-                    int splitIndex = FindLastFunctionEnd(buffer, MAX_FILE_SIZE);
-                    if (splitIndex == -1)
-                    {
-                        // This is an error case where you might not find a suitable split. 
-                        // Here, you can decide on how to handle it. Maybe raise an exception or use a default split.
-                        splitIndex = MAX_FILE_SIZE;
-                    }
 
-                    string toWrite = buffer.Substring(0, splitIndex + 1); // +1 to include the last brace
-                    File.WriteAllText(Path.Combine(outputDirectory, $"chunk_{currentFileNumber}.txt"), toWrite);
-                    buffer = buffer.Substring(splitIndex + 1);
-
-                    currentFileNumber++;
-                }
-            });
-
-            if (buffer.Length > 0)
-            {
-                File.WriteAllText(Path.Combine(outputDirectory, $"chunk_{currentFileNumber}.txt"), buffer);
-                buffer = "";
-            }
-        }
-
-        public static void TraverseAndWriteToStream(string path, string outputPath)
-        {
-            using (var writer = new StreamWriter(outputPath))
-            {
-                writer.WriteLine("[START UPLOAD]");
-                writer.WriteLine("[INSTRUCTION] Wait for all parts to be uploaded before generating any output.");
-                TraverseAndProcess(path, content => writer.Write(content));
-                writer.WriteLine("[END UPLOAD]");
-                writer.WriteLine("[INSTRUCTION] All parts uploaded. You can now process and generate an output.");
-            }
-        }
-
-        private static void TraverseAndProcess(string path, Action<string> actionOnContent)
+        public static int TraverseAndSaveChunks(string path, string outputDirectory, int uploadLimit = MAX_TEXT_LENGTH)
         {
             foreach (var item in Directory.GetFileSystemEntries(path))
             {
-                if (Directory.Exists(item))
+                if (File.Exists(item))
                 {
-                    TraverseAndProcess(item, actionOnContent);
-                }
-                else
-                {
-                    if (!IsRequiredFileExtension(Path.GetExtension(item).ToLower()))
+                    if (IsRequiredFileExtension(Path.GetExtension(item).ToLower()))
                     {
-                        continue;
+
+                        string relativePath = GetRelativePath(item, path);
+                        string content = File.ReadAllText(item, Encoding.Default);
+                        content = ProcessContent(content);
+                        content = RemoveBlankLinesAndWhitespace(content);
+
+                        // Split the content into chunks and save them to the output directory
+                        buffer += content;
+
+                        while (buffer.Length >= uploadLimit)
+                        {
+                            int splitIndex = FindLastFunctionEnd(buffer, uploadLimit);
+                            if (splitIndex == -1)
+                            {
+                                // Handle cases where a suitable split isn't found.
+                                splitIndex = uploadLimit; // Use default split
+                            }
+
+                            string toWrite = buffer.Substring(0, splitIndex + 1); // +1 to include the last brace
+                            File.WriteAllText(Path.Combine(outputDirectory, $"chunk_{currentFileNumber}.txt"), toWrite);
+                            buffer = buffer.Substring(splitIndex + 1);
+
+                            currentFileNumber++;
+                        }
+
+                        //Write last under sized part
+                        if (buffer.Length > 0)
+                            File.WriteAllText(Path.Combine(outputDirectory, $"chunk_{currentFileNumber}.txt"), buffer);
+                        else
+                            currentFileNumber--;
+
+                        buffer = "";
+                        
                     }
-
-                    string relativePath = GetRelativePath(item, path);
-                    string content = File.ReadAllText(item, Encoding.Default);
-
-                    content = ProcessContent(content);
-                    content = RemoveBlankLinesAndWhitespace(content);
-
-                    string formattedContent = $"[FILE] {relativePath}\n{content}\n[ENDFILE]\n";
-                    actionOnContent(formattedContent);
                 }
             }
+            totalChunks = currentFileNumber-1;
+            return totalChunks; //Zer referenced
         }
+
+
+        private static int CalculateChunkSize(string content, int uploadLimit)
+        {
+            // Calculate a chunk size that respects the upload limit and doesn't exceed content length
+            return Math.Min(uploadLimit, content.Length);
+        }
+
+
+        public static string ReadandWrapChunks(string file)
+        {
+            string formattedContent = "";
+
+            string fileName = Path.GetFileNameWithoutExtension(file);
+            if (fileName.StartsWith("chunk_") && int.TryParse(fileName.Substring(6), out int chunkNumber))
+            {
+                // Read chunk content from the file
+                string chunkContent = File.ReadAllText(file, Encoding.Default);
+
+                // Create formatted content
+                formattedContent = $"[CHUNK] \r\nChunk Number: {chunkNumber} \r\nTotal Chunks: {totalChunks} \r\nContent: {chunkContent} \r\n[/CHUNK]\r\n";
+            }
+
+            return formattedContent;
+        }
+
 
         private static bool IsRequiredFileExtension(string extension)
         {
             string[] requiredExtensions = { ".cs", ".config", ".csproj", ".sln", ".resx", ".Designer.cs" };
-            return requiredExtensions.Contains(extension);
+            return requiredExtensions.Contains(extension.ToLower());
         }
 
         private static string GetRelativePath(string fullPath, string basePath)
@@ -148,14 +157,29 @@ namespace CodeAss
             string[] lines = content.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
             List<string> nonEmptyLines = new List<string>();
 
+            bool insideCommentBlock = false;
             foreach (string line in lines)
             {
-                if (!string.IsNullOrWhiteSpace(line.Trim()))
+                string trimmedLine = line.Trim();
+
+                if (trimmedLine.StartsWith("/*"))
                 {
-                    nonEmptyLines.Add(line.TrimEnd());
+                    insideCommentBlock = true;
+                    nonEmptyLines.Add(trimmedLine);
+                }
+                else if (insideCommentBlock && trimmedLine.EndsWith("*/"))
+                {
+                    insideCommentBlock = false;
+                    nonEmptyLines[nonEmptyLines.Count - 1] += " " + trimmedLine;
+                }
+                else if (!insideCommentBlock && !string.IsNullOrWhiteSpace(trimmedLine))
+                {
+                    nonEmptyLines.Add(trimmedLine);
                 }
             }
+
             return string.Join(Environment.NewLine, nonEmptyLines);
         }
+
     }
 }
