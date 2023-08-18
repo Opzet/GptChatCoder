@@ -4,24 +4,41 @@ using System.IO;
 using System.Reflection;
 using System.Windows.Forms;
 
+using LibGit2Sharp;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrackBar;
 
 namespace CodeAss
 {
+
+    /*
+    Higher Usage Cap for GPT-4
+        Thanks for your interest in GPT-4!
+
+        To give every Plus user a chance to try the model, we’re currently dynamically adjusting usage caps for GPT-4 as we learn more about demand and system performance.
+
+        We're also actively exploring ways for ChatGPT Plus subscribers to use GPT-4 in a less constrained manner; this may be in the form of a new subscription level for higher-level GPT-4 usage, or something else.
+    */
     public partial class ClipboardLoader : Form
     {
-        private int currentChunkNumber = 1;
+        private int currentChunkNumber = 0;
         private int totalChunks;
         private string chunksDirectory;
 
-
+        const string GPTInstruct = "[INSTRUCTION: STRICTLY WAIT FOR ALL PARTS TO BE UPLOADED BEFORE GENERATING ANY OUTPUT!]\r\n" +
+                                   "[DESCRIPTION] This is a collection of C# code files from a Visual Studio project. Once the entire project has been uploaded, I will request tasks related to the code. This could include revising the code, fixing errors, restructuring or refactoring the codebase, and/or adding documentation. Please treat the contents as a coherent set and maintain the context when working on the provided tasks.\r\n";
+                                   
         public ClipboardLoader()
         {
             InitializeComponent();
-
         }
 
         private void btnChunkProject_Click(object sender, EventArgs e)
         {
+            // Load the initial instruction
+            txtPreview.Text = GPTInstruct;
+            
+            ValidateButtons();
+
             if (string.IsNullOrEmpty(repoPath.Text))
             {
                 feedbackLabel.Text = "Please provide the repository local path.";
@@ -29,7 +46,7 @@ namespace CodeAss
             }
 
             btnChunkProject.Enabled = false;
-            btnLoadNextChunk.Enabled = false;
+            btnBack.Enabled = btnForward.Enabled = false;
 
             chunksDirectory = GetUniqueTempDirectory();
 
@@ -38,10 +55,11 @@ namespace CodeAss
             //txtOutputPath.Text = outputFile;
 
             // Chunk Repo
-            RepoToGpt.TraverseAndConvert(repoPath.Text, chunksDirectory);
+            RepoToGpt.TraverseAndSaveChunks(repoPath.Text, chunksDirectory);
 
             totalChunks = Directory.GetFiles(chunksDirectory, "chunk_*.txt").Length;
 
+           
             // Initialize the progress bar after determining the total chunks
             progressBar1.Minimum = 1;
             progressBar1.Maximum = totalChunks;
@@ -49,7 +67,8 @@ namespace CodeAss
             progressBar1.Step = 1;
 
             feedbackLabel.Text = $"Chunking completed. {totalChunks} chunks created.";
-            btnLoadNextChunk.Enabled = true;
+            LoadContent(currentChunkNumber);
+            ValidateButtons(); 
         }
 
 
@@ -116,7 +135,8 @@ namespace CodeAss
             if (currentChunkNumber <= totalChunks)
             {
                 string chunkPath = Path.Combine(chunksDirectory, $"chunk_{currentChunkNumber}.txt");
-                Clipboard.SetText(File.ReadAllText(chunkPath));
+                txtPreview.Text = File.ReadAllText(chunkPath);
+                Clipboard.SetText(txtPreview.Text);
                 progressBar1.Value = currentChunkNumber;
 
                 statusLabel.Text = $"Loaded chunk {currentChunkNumber} of {totalChunks}";
@@ -147,7 +167,7 @@ namespace CodeAss
                 }
             }
             btnChunkProject.Enabled = true;
-            btnLoadNextChunk.Enabled = false;
+            
         }
 
         private async void btnCloneRepo_Click(object sender, EventArgs e)
@@ -174,6 +194,80 @@ namespace CodeAss
             {
                 statusLabel.Text = "Ready> ";
             }
+        }
+
+        private void btnBack_Click(object sender, EventArgs e)
+        {
+            // Decrement currentChunkNumber and load the previous content
+            currentChunkNumber--;
+            LoadContent(currentChunkNumber);
+
+            ValidateButtons();
+        }
+
+        private void btnForward_Click(object sender, EventArgs e)
+        {
+            // Increment currentChunkNumber and load the next content
+            currentChunkNumber++;
+            LoadContent(currentChunkNumber);
+
+            ValidateButtons();
+        }
+
+        private void LoadContent(int contentNumber)
+        {
+            string contentToLoad;
+
+            string GPTChunkMsg = "[INSTRUCTION: STRICTLY DO NOT GENERATE OUTPUT UNTIL PROMPTED!]\r\n" +
+                                $"[PART : {contentNumber} OF {totalChunks}]";
+
+
+            if (contentNumber == 0) // Load initial instructions
+            {
+              
+
+                contentToLoad = GPTInstruct;
+                contentToLoad += GPTChunkMsg;
+                contentToLoad += $"[START UPLOAD]"; 
+            }
+            else if (contentNumber >= 1 && contentNumber <= totalChunks)
+            {
+                string chunkPath = Path.Combine(chunksDirectory, $"chunk_{contentNumber}.txt");
+                
+                contentToLoad = File.ReadAllText(chunkPath);
+                contentToLoad += GPTChunkMsg;
+
+                progressBar1.Value = contentNumber;
+                statusLabel.Text = $"Loaded chunk {contentNumber} of {totalChunks}";
+
+                if (contentNumber == totalChunks)
+                {
+                    contentToLoad += GPTChunkMsg;
+                    contentToLoad += "\n[END UPLOAD]\n[INSTRUCTION] All parts uploaded. You can now process and generate an output.";
+                }
+            }
+            else
+            {
+                contentToLoad = "";
+            }
+
+            txtPreview.Text = contentToLoad;
+
+            if (!string.IsNullOrEmpty(contentToLoad))
+            {
+                Clipboard.SetText(contentToLoad);
+            }
+            else
+            {
+                Clipboard.Clear();
+            }
+        }
+
+
+        private void ValidateButtons()
+        {
+            btnBack.Enabled = currentChunkNumber > 0; // Only enable back button if it's not on the instruction
+            btnForward.Enabled = currentChunkNumber < totalChunks; // Only enable forward button if there are chunks left to display
         }
     }
 }
