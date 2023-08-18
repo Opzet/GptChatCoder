@@ -9,15 +9,6 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrackBar;
 
 namespace CodeAss
 {
-
-    /*
-    Higher Usage Cap for GPT-4
-        Thanks for your interest in GPT-4!
-
-        To give every Plus user a chance to try the model, we’re currently dynamically adjusting usage caps for GPT-4 as we learn more about demand and system performance.
-
-        We're also actively exploring ways for ChatGPT Plus subscribers to use GPT-4 in a less constrained manner; this may be in the form of a new subscription level for higher-level GPT-4 usage, or something else.
-    */
     public partial class ClipboardLoader : Form
     {
         private int currentChunkNumber = 0;
