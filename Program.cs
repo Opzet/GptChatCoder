@@ -16,12 +16,8 @@ namespace CodeAss
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-
-            // Instantiate the classes that implement the interfaces
-            IGitRepositoryManager gitRepoManager = new CodeAss();
-            IGPTSeedingService gptSeedingService = new CodeAss();
-
-            Application.Run(new MainForm(gitRepoManager, gptSeedingService));
+            
+            Application.Run(new ClipboardLoader());
         }
     }
 }
